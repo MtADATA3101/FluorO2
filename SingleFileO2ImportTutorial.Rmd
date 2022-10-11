@@ -1,0 +1,49 @@
+---
+title: "O2ImportSingleFileTutorial"
+author:
+- Douglas A. Campbell
+- Maximilian Berthold
+- Laurel Genge
+output:
+  html_document:
+    df_print: paged
+    code_folding: hide
+    keep_md: yes
+    fig_caption: yes
+    toc: TRUE
+    toc_float: TRUE
+csl: plos-one.csl
+---
+
+# Introduction
+We use an optode to measure [O2] µmol l-1 in suspensions of phytoplankton.
+Changes in [O2] reflect (hopefully) oxygen evolution or oxygen consumption by the cell suspension.
+
+# Materials and Methods
+
+This .Rmd Rworkbook imports data in simple .txt .tsv form exported from FireSting optodes based upon project specific values for variables set by the user.
+
+It tidies and organizes the data.
+
+```{r load libraries} 
+# libraries; Note check actual dependencies
+library(tidyverse)
+library(lubridate)
+```
+
+## To-Do list:
+
+variable name is in two rows, need to find a way to make variable name in two rows into one row.
+Need to match the tube number from file name with Ch1O2 etc... 
+Need to match each run with date from catalog
+create preliminary graphs
+
+## Priority List
+-single data file import for O2
+-multi-file batch data import (may not be fully feasible given we need match multiple files together in some cases)
+-O2 preliminary plots
+-merge O2 plots as over-lays of growth plots (time axis may be tricky but I think I know how)
+
+## First Try Import Dialog Under 'Environment' to import a single file into a dataframe.
+
+File delimiter is '.tsv' b/c the instrument software is from Europe.
