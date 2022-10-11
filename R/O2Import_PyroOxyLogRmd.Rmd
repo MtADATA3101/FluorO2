@@ -63,7 +63,7 @@ Project <- "FluorO2"
 Run <- "SySlCCACaloxy"
 
 FileID <- "caloxy"
-DataIn <- file.path("..", "Optode", Run)
+DataIn <- file.path("..", "RawData", "Optode", Run)
 DataOut <- file.path("..","ImportData", "Optode")
 #MetaCatalog <- file.path("..","PicoCatalog.csv")
 
@@ -194,11 +194,10 @@ head(O2Data)
 
 #Generate columns from Filename
 ```{r generate columns from Filename}
-"../Optode/SySlCCACaloxy/202205181355_PICO_caloxy_SySl1246_535_LL.txt"
-"SySlCCACaloxy/202205181355_PICO_SySl1246_535_LL"
+#"../RawData/Optode/SySlCCACaloxy/202205181355_PICO_caloxy_SySl1246_535_LL.txt"
 
 O2Data <- O2Data %>%
-  mutate(Filename = str_remove(string = Filename, pattern = "../Optode/"),
+  mutate(Filename = str_remove(string = Filename, pattern = "../RawData/Optode/"),
          Filename = str_remove(string = Filename, pattern = ".txt"),
          Filename = str_remove(string = Filename, pattern = "caloxy_")) %>%
   separate(Filename, into = c("Run", "FileDateTime", "Project", "CultureID", "Ex_WL", "GrowthLight"), sep = "([\\/\\_\\.])", remove = FALSE) %>%
@@ -235,7 +234,7 @@ O2Data %>%
 ```
 
 
-```{r save SolFitsTrim data}
+```{r save O2Data}
 saveRDS(O2Data, file.path(DataOut, paste(Project, Run, "O2Data.Rds", sep = "_"), fsep = .Platform$file.sep))
 ```
 
