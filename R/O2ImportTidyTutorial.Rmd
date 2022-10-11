@@ -1,0 +1,104 @@
+---
+title: "O2ImportTidyTutorial"
+author:
+
+- Douglas A. Campbell
+- Maximilian Berthold
+- Laurel Genge
+output:
+  html_document:
+    df_print: paged
+    code_folding: hide
+    keep_md: yes
+    fig_caption: yes
+    toc: TRUE
+    toc_float: TRUE
+csl: plos-one.csl
+---
+
+# Introduction
+We use an optode to measure [O2] µmol l-1 in suspensions of phytoplankton.
+Changes in [O2] reflect (hopefully) oxygen evolution or oxygen consumption by the cell suspension.
+
+# Materials and Methods
+
+This .Rmd Rworkbook imports multiple paralle data files in simple .txt .tsv form exported from FireSting optodes based upon project specific values for variables set by the user.
+
+It tidies and organizes the data.
+
+ 
+# Set Chunk Options
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+knitr::opts_chunk$set(fig.path='Figs/')
+```
+
+```{r set project variables}
+
+Project <- "FluorO2"
+
+Run <- "SySlCCACaloxy"
+
+FileID <- "caloxy"
+DataIn <- file.path("..", "RawData", "Optode", Run)
+
+DataOut <- file.path("..", "ImportData", "Optode")
+
+FileEncode <- "UTF-8"
+Delimiter <- "\t"
+
+HeaderRows <- 13
+Comment <- "#"
+
+#Set URL for MetaData
+MetaDataURL <- "https://docs.google.com/spreadsheets/d/1ZXpwR7Gfto-uRzVdXzMpQF4frbrvMLH_IyLqonFZRSw/edit#gid=0"
+
+
+```
+
+```{r load libraries} 
+# libraries; Note check actual dependencies
+library(tidyverse)
+library(lubridate)
+library(broom)
+library(googlesheets4)
+library(googledrive)
+
+#library(knitr)
+#library(zoo)
+#library(tidyquant)
+```
+
+
+```{r set colours}
+#Setting a vector of wavelength values, then using it to 'name' a vector of R colour values will allow us to assign colours to wavelengths later
+Wavelengths_nm = c(445, 470, 505, 535, 590)
+Colours_nm = c("darkblue", "dodgerblue", "darkgreen", "yellowgreen",  "darkorange")
+
+
+names(Colours_nm) <- Wavelengths_nm
+Colours_nm
+
+
+```
+
+Read in MetaData catalog
+```{r load catalog from googlesheet}
+
+gs4_deauth #deauthorizes access to googlesheet
+
+MetaData <- read_sheet(MetaDataURL) %>%
+  drop_na(WL) %>%
+  mutate(WL = unlist(WL))
+
+# # sheet is read in by sheet ID, obtained from the URL of the sheet.
+# # read_sheet sets the type of columns it can't parse to a list.
+# # ggplot/dplyr does not work well with a dataframe of lists.
+# # In this case WL is set to a list since some values are numbers, some are strings, some are blank.
+# # To fix this, first drop all rows missing WL, then unlist.
+# # Must first drop NA rows since unlist will collapse NULL lists, then the unlisted WL is a shorter length than original WL column, which mutate doesn't like.
+# 
+ 
+ as.data.frame(MetaCatalog)
+```
+
