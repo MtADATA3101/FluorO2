@@ -171,13 +171,6 @@ We have code to import and tidy a single file from the PyroOxyLog Oxygen Optode 
 
 We could save the tidied DataFrame as a .csv for use elsewhere, or as an .Rds file for re-use within R.
 
-```{r save OptodeTest data}
-write_csv(x = OptodeTest3, file = file.path("OptodeTest3.csv", fsep = .Platform$file.sep))
-
-#note slightly different syntax for saveRDS
-saveRDS(OptodeTest3, file = file.path("OptodeTest3.Rds", fsep = .Platform$file.sep))
-```
-
 But, we have thousands of such files with ~~identical structures~~, containing data from different runs.
 
 And, we need to merge these data rows with appropriate metadata, and with matched data from other instruments.
