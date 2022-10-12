@@ -39,17 +39,6 @@ create preiminary graphs
 -O2 preliminary plots
 -merge O2 plots as over-lays of growth plots (time axis may be tricky but I think I know how)
 
-## First Try Import Dialog Under 'Environment' to import a single file into a dataframe.
-
-File delimiter is '.tsv' b/c the instrument software is from Europe.
-  
-We have code to import and tidy a single file from the PyroOxyLog Oxygen Optode monitoring system.
-
-But, we have thousands of such files with ~~identical structures~~, containing data from different runs.
-
-Could we implement a bulk import and assembly of the data from multiple files into a common dataframe?
-
-  
 # Set Chunk Options
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE)

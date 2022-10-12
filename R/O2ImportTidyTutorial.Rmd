@@ -22,7 +22,7 @@ Changes in [O2] reflect (hopefully) oxygen evolution or oxygen consumption by th
 
 # Materials and Methods
 
-This .Rmd Rworkbook imports multiple paralle data files in simple .txt .tsv form exported from FireSting optodes based upon project specific values for variables set by the user.
+This .Rmd Rworkbook imports multiple parallel data files in simple .txt .tsv form exported from FireSting optodes based upon project specific values for variables set by the user.
 
 It tidies and organizes the data.
 
