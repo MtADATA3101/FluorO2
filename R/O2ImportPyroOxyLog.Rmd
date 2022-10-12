@@ -110,7 +110,7 @@ MetaData for each culture was entered manually; including a serial SampleID (ex.
 # 
  MetaCatalog <- read_sheet(MetaDataURL) %>%
 # # sheet is read in by sheet ID, obtained from the URL of the sheet.
-# # read_sheet sets the type of columns it can't parse to a list.
+# # read_sheet sets the type of columns can't parse to a list.
 # # ggplot/dplyr does not work well with a dataframe of lists.
 # # In this case WL is set to a list since some values are numbers, some are strings, some are blank.
 # # To fix this, first drop all rows missing WL, then unlist.
