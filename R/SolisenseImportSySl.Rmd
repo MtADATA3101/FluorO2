@@ -61,9 +61,9 @@ HeaderRows <- 0
 ```
 
 ```{r conversions}
-us_s = 1000000
-photons_umol = 6.022E17
-A2_m2 = 1E20
+us_s <- 1000000
+photons_umol <- 6.022E17
+A2_m2 <- 1E20
 ```
 
 
@@ -174,7 +174,7 @@ colnames(SolFits)
  "../RawData/SolisenseSySl/SySlCCACaloxy/PICO_202205181355_caloxy_SySl1246_535_LL_fit.csv"
 
 SolFitsTrim <- SolFits %>% 
-  filter(!grepl("----", DATE)) %>% # remove rows with "----"
+  filter(!grepl("----", DATE)) %>% # remove rows with "----" in DATE
   select(-c("RFID_User_Data", "Barcode_Data", "Lon", "Lat", "GPS_stat", "...58")) %>% # remove superfluous columns
   mutate(Filename = str_remove(string = Filename, pattern = "../RawData/SolisenseSySl/"),
          Filename = str_remove(string = Filename, pattern = "_caloxy"),
@@ -219,7 +219,7 @@ head(SolFitsTrim)
 #Intercepts for cross conversions set to 0.
 
 #Some smarter way to do this with map etc....
-SolFitsTrim <- SolFitsTrim |>
+SolFitsTrim <- SolFitsTrim |> 
   mutate(nm445Corr = case_when(TempCont == "TC" ~ nm445 * ActPARCrossCal$Slope[ActPARCrossCal$DCLamp == "Pwr1_uE" & ActPARCrossCal$Models == "DCWaterJacketlm_tidy"],
                                  TempCont == "noTC" ~ nm445 * ActPARCrossCal$Slope[ActPARCrossCal$DCLamp == "Pwr1_uE" & ActPARCrossCal$Models == "DCCuvettelm_tidy"]),
          nm470Corr = case_when(TempCont == "TC" ~ nm470 * ActPARCrossCal$Slope[ActPARCrossCal$DCLamp == "Pwr2_uE" & ActPARCrossCal$Models == "DCWaterJacketlm_tidy"],
