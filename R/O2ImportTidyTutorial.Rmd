@@ -123,13 +123,18 @@ This data set is big enough to be worth a bulk import, but small enough to handl
 Create function read_tsv_plus adding file name and skips header rows to start reading file after string "Data" read.delim_plus or read_delim_plus adds filename and cdate, message=FALSE, warning=FALSE
 
 ```{r create function to read data}
-read_delim_plus <- function(flnm, delimiter, headerrows, fileencode){read_delim(flnm, delim = delimiter,  col_names = TRUE,  comment = Comment, skip = headerrows, escape_double = FALSE,  locale = locale(encoding = fileencode), trim_ws = TRUE, ) %>%
+read_delim_plus <- function(flnm, delimiter, headerrows, fileencode){read_delim(flnm, delim = delimiter,  col_names = TRUE,  comment = Comment, skip = headerrows, escape_double = FALSE,  locale = locale(encoding = fileencode), trim_ws = TRUE) %>%
     mutate(Filename = flnm,
            Cdatetime = ymd_hms(file.info(flnm)$ctime))
   }
 ```
 
 ```{r read optode data}
+
+# test <- c(1,2,3)
+# 
+# bob <- test %>%
+#   map(~. + 1)
 
 #tidy after map_df
 O2Data <- O2DataFiles %>%
@@ -168,8 +173,60 @@ O2Data <- O2DataFiles %>%
 #          LR_s = `Time (s)`,
 #          O2_umolL = `Ch1...5`,
 #          Temp_C = `Ch 1...9`)
-#   ) 
+#   )
   
 head(O2Data)
+```
+
+Reads in O2Data files one after another; skips the header "notes" at the beginning of the data and begins to read each file after HeaderRows. Renames columns so there are no duplicates (.name_repair).
+
+There are multiple functions from baseR ('read.delim'), from Tidyverse ('read_delim') or from data.table ('fread') for reading in files; if one approach fails; try another.
+Pipe read files directly to cleaning steps; could do cleaning transforms within 'map_df' as well
+
+# Generate columns from Filename
+```{r generate columns from Filename}
+O2Data <- O2Data %>%
+  mutate(Filename = str_remove(string = Filename, pattern = "../RawData/Optode/"),
+         Filename = str_remove(string = Filename, pattern = ".txt"),
+         Filename = str_remove(string = Filename, pattern = "caloxy_")) %>%
+  separate(Filename, into = c("Run", "FileDateTime", "Project", "CultureID", "Ex_WL", "GrowthLight"), sep = "([\\/\\_])", remove = FALSE)
+
+
+head(O2Data)
+```
+
+
+
+Fix column classes
+```{r fix column classes}
+colnames(O2Data)
+
+O2Data <- type_convert(O2Data) %>%
+  mutate(Ex_WL = as.factor(Ex_WL))
+
+head(O2Data)
+```
+
+```{r prelim plot}
+O2Data %>%
+  ggplot() +
+  geom_point(aes(x = LR_s, y = O2_umolL)) +
+  theme_bw()
+
+O2Data %>%
+  filter(Date == "2022-04-06") %>%
+  ggplot() +
+  geom_point(aes(x = LR_s, y = O2_umolL, colour = Ex_WL)) +
+  scale_colour_manual(values = Colours_nm) +
+  facet_grid(rows = vars(Ex_WL), cols = vars(CultureID)) +
+  coord_cartesian(xlim = c(0,1200)) +
+  theme_bw()
+
+
+```
+
+
+```{r save O2Data}
+saveRDS(O2Data, file.path(DataOut, paste(Project, Run, "O2Data.Rds", sep = "_"), fsep = .Platform$file.sep))
 ```
 
