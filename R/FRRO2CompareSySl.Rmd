@@ -297,26 +297,7 @@ interpolate <- function(x){zoo::na.locf(x, na.rm = FALSE, fromLast = TRUE, type 
 
 O2SlopeDataClean <- O2SlopeDataClean %>%
   mutate(ActPARCorrinter = interpolate(ActPARCorr))
-         #Dark1sinter = interpolate(Dark1s), 
-         #LR_sFRRfinter = interpolate(LR_s), .after = Temp_C)
-         
-         #ActPARCorr_photonsm2sinter = interpolate(ActPARCorr_photonsm2s),
-         #JVPSIIinter = interpolate(JVPSII_aLHIIminmax)
-
-# test <- O2SlopeData %>%
-#   filter(CultureID == "MaBe3433",
-#          #LR_sO2 < 450,
-#         Ex_WL == "590")
-# 
-# test %>%
-#    #filter(Dark1sinter == 0) %>%
-#    ggplot() +
-#   geom_point(aes(x = LR_sO2, y = O2_umolL, colour = Ex_WL)) +
-#  geom_point(aes(x = LR_sO2, y = ActPARCorrinter, colour = "black")) +
-#     geom_point(aes(x = LR_sO2, y = Dark1sinter), colour = "red") +
-#   scale_colour_manual(values = Colours_nm) +
-#   facet_grid(rows = vars(Ex_WL), cols = vars(CultureID)) +
-#   theme_bw()
+ 
 ```
 
 Check whether ActPARCorrinter worked properly
