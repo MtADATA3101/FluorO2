@@ -155,7 +155,10 @@ Read in Run Specific O2Data
 Make this more general as we accumulate more files.
 ```{r read data}
 #temporary hack to cope with run date; replace with GREP? or map?
-O2Data <- readRDS(file = file.path(DataInO2, paste("FluorO2_", Run, "_O2Data.Rds", sep = "")))
+O2Data <- readRDS(file = file.path(DataInO2, paste("FluorO2_", Run, "_O2Data.Rds", sep = ""))) %>%
+  mutate(TempCont = "TC") %>% #add TempCont column for compatibility
+  rename(ObsDate = Date) #rename variable for compatibility
+
 
 head(O2Data)
 ```
@@ -233,6 +236,7 @@ Ex_WL = 445 & SySl1158, SySl1159, SySl1191, SySl1192 (0 only) (ok in SolisenseIm
  Ex_WL = 505 & SySl1189 (missing all data in SolisenseImportSySl.Rmd)
 ```{r leftjoin}
 colnames(O2Data)
+
 colnames(FRRfDataLight)
 
 O2SlopeData <- left_join(x = O2Data, y = FRRfDataLight, by = c("Project", "Run", "CultureID", "Ex_WL", "GrowthLight", "TempCont", "ObsDate","LR_s"), suffix = c("O2", "FRRf"), keep = FALSE)
@@ -241,6 +245,8 @@ head(O2SlopeData)
 ```
 
 ```{r clean up columns}
+colnames(O2SlopeData)
+
 O2SlopeData <- O2SlopeData %>%
   select(-c("PIF","LEDSel", "Tau1PQ","Alp2PQ","Tau2PQ","Alp3PQ", "TPQ_PSI", "nm445", "nm470","nm505","nm535","nm590","IR"))
 ```
