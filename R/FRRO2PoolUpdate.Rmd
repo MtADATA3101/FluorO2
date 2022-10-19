@@ -79,15 +79,16 @@ library(lubridate)
 library(broom)
 #library(knitr)
 #library(zoo)
-library(googlesheets4)
-library(googledrive)
+ library(googlesheets4)
+ library(googledrive)
 ```
 
 ```{r set project variables}
 #"..", takes up a level in the directory path
 Project <- "FluorO2"
 #Temporary RunDate during auditing
-DataIn<- file.path("..","ReFitData")
+Run <- "SySlCCACaloxy"
+DataIn<- file.path("..","FitData")
 DataOut <- file.path("..", "ProcessData")
 #CatalogPath <- file.path("~/Dropbox/MURIS/MURIS_catalog.csv")
 ChloroGoogle <- "https://docs.google.com/spreadsheets/d/1yhmuv7V0clcLpqlsTYBMtfIcsS8Rp5yjtkRH2ktZwk0/edit#gid=0"
@@ -182,73 +183,70 @@ MetaData from MURIS previously merged with O2FRRf files.
 ```{r read O2FRRfData}
 #issue with Character vs. Numeric for files 7-9 with column PQP_Size, source and mc 
 
+    #%>% select(-c(PQP_Size, source, mc)
+
 read_plus_rds = function(Flnm) {readRDS(Flnm) %>%
-    mutate(Filename = Flnm) %>%
-    select(-c(PQP_Size, source, mc))
+    mutate(Filename = Flnm)
   }
 
-
-O2FRRfAll <- O2FRRfFiles %>%
+#hack to read only target file
+O2FRRfAll <- O2FRRfFiles[26] %>%
   map_df(~read_plus_rds(Flnm = .)) %>%
-  filter(!is.na(filenameO2)) %>%
-  select(
-    where(
-      ~!all(is.na(.x)) #remove irrelevant columns
-    )
-  )
+   filter(!is.na(Filename)) %>%
+   select(
+     where(
+       ~!all(is.na(.x)) #remove irrelevant columns
+     )
+   )
 
 ```
 
-
+Something missing with TempContO2
 ```{r prelimplot}
 O2FRRfAll %>%
-  filter(Ex_WL == 445) %>%
+  filter(ActPARCorr != 0) %>%
   ggplot() +
-  geom_point(aes(x = ActPARCorr, y = O2evln_O2ls, colour = as.factor(TempContO2))) +
-  #scale_colour_manual(values = Colours_nm) +
-  facet_grid(rows = vars(ObsDate), cols = vars(CultureID)) +
+  geom_point(aes(x = ActPARCorr, y = O2evln_O2lsMIN, colour = as.factor(TempContFRRf))) +
+  facet_grid(cols = vars(Ex_WL)) +
   theme_bw()
 
 
 O2FRRfAll %>%
-  filter(Dark1s == 0) %>%
+  filter(ActPARCorr != 0) %>%
   ggplot() +
-  geom_point(aes(x = ActPARCorr, y = ETRqpOxbo, colour = as.factor(TempContO2))) +
-  geom_smooth(aes(x = ActPARCorr, y = ETRqpOxbo, colour = as.factor(TempContO2)), method = "lm") +
-  #scale_colour_manual(values = Colours_nm) +
-  facet_grid(rows = vars(Ex_WL), cols = vars(CultureID)) +
+  geom_point(aes(x = ActPARCorr, y = ETRqpOxbo, colour = as.factor(TempContFRRf))) +
+  geom_smooth(aes(x = ActPARCorr, y = ETRqpOxbo, colour = as.factor(TempContFRRf)), method = "lm") +
+  facet_grid(cols = vars(Ex_WL)) +
   theme_bw()
 
 O2FRRfAll %>%
-  filter(Ex_WL == 445,
-         ActPARCorr != 0) %>%
+  filter(ActPARCorr != 0) %>%
   ggplot() +
-  geom_point(aes(x = ETRCtauav, y = ETRGorbo, colour = as.factor(TempContO2))) +
-  geom_smooth(aes(x = ETRCtauav, y = ETRGorbo, colour = as.factor(TempContO2)), method = "lm") +
-  #scale_colour_manual(values = Colours_nm) +
-  #facet_grid(rows = vars(Ex_WL)) +
-  coord_fixed(ratio = 1) +
+  geom_point(aes(x = ETRqpOxbo, y = O2evln_O2lsMIN * 4, colour = as.factor(Ex_WL), alpha = ActPARCorr)) +
+  geom_smooth(aes(x = ETRqpOxbo, y = O2evln_O2lsMIN * 4, colour = as.factor(Ex_WL)), method = "lm") +
+    scale_colour_manual(values = Colours_nm) +
+  facet_grid(cols = vars(Ex_WL)) +
   theme_bw()
 
+
+
 O2FRRfAll %>%
-  filter(#Ex_WL == 445,
-         ActPARCorr != 0) %>%
+  filter(ActPARCorr != 0) %>%
   ggplot() +
-  geom_point(aes(x = O2evln_O2ls, y = JVPSII_ETRtauav_FoSig, colour = as.factor(Ex_WL), size = ActPARCorr)) +
-  geom_smooth(aes(x = O2evln_O2ls, y = JVPSII_ETRtauav_FoSig, colour = as.factor(Ex_WL)), method = "lm") +
-  #scale_colour_manual(values = Colours_nm) +
-  #facet_grid(rows = vars(Ex_WL)) +
+  geom_point(aes(x = O2evln_O2lsMIN, y = JVPSII_ETRtauav_FoSig, colour = as.factor(Ex_WL), size = ActPARCorr)) +
+  geom_smooth(aes(x = O2evln_O2lsMIN, y = JVPSII_ETRtauav_FoSig, colour = as.factor(Ex_WL)), method = "lm") +
+  scale_colour_manual(values = Colours_nm) +
+  facet_grid(cols = vars(Ex_WL)) +
   #coord_fixed(ratio = 1) +
   theme_bw()
 
 O2FRRfAll %>%
-  filter(#Ex_WL == 445,
-         ActPARCorr != 0) %>%
+  filter(ActPARCorr != 0) %>%
   ggplot() +
-  geom_point(aes(x = O2evln_O2ls, y = JVPSII_ETRtauav_aLHII_Sig, colour = as.factor(Ex_WL), size = ActPARCorr)) +
-  geom_smooth(aes(x = O2evln_O2ls, y = JVPSII_ETRtauav_aLHII_Sig, colour = as.factor(Ex_WL)), method = "lm") +
-  #scale_colour_manual(values = Colours_nm) +
-  #facet_grid(rows = vars(Ex_WL)) +
+  geom_point(aes(x = O2evln_O2lsMIN, y = JVPSII_ETRtauav_aLHII_Sig, colour = as.factor(Ex_WL), size = ActPARCorr)) +
+  geom_smooth(aes(x = O2evln_O2lsMIN, y = JVPSII_ETRtauav_aLHII_Sig, colour = as.factor(Ex_WL)), method = "lm") +
+  scale_colour_manual(values = Colours_nm) +
+  facet_grid(rows = vars(Ex_WL)) +
   #coord_fixed(ratio = 1) +
   theme_bw()
 
@@ -257,9 +255,9 @@ O2FRRfAll %>%
   filter(#Ex_WL == 445,
          ActPARCorr != 0) %>%
   ggplot() +
-  geom_point(aes(x = O2evln_O2ls, y = JVPSII_aLHIIOxbomax, colour = as.factor(Ex_WL), size = ActPARCorr)) +
-  geom_smooth(aes(x = O2evln_O2ls, y = JVPSII_aLHIIOxbomax, colour = as.factor(Ex_WL)), method = "lm") +
-  #scale_colour_manual(values = Colours_nm) +
+  geom_point(aes(x = O2evln_O2lsMIN, y = JVPSII_aLHIIOxbomax, colour = as.factor(Ex_WL), size = ActPARCorr)) +
+  geom_smooth(aes(x = O2evln_O2lsMIN, y = JVPSII_aLHIIOxbomax, colour = as.factor(Ex_WL)), method = "lm") +
+  scale_colour_manual(values = Colours_nm) +
   #facet_grid(rows = vars(Ex_WL)) +
   #coord_fixed(ratio = 1) +
   theme_bw()
@@ -268,20 +266,12 @@ O2FRRfAll %>%
   filter(#Ex_WL == 445,
          ActPARCorr != 0) %>%
   ggplot() +
-  geom_point(aes(x = O2evln_O2ls, y = JVPSII_ETRtauav_aLHII_Sig, colour = as.factor(Ex_WL), size = ActPARCorr)) +
-  geom_smooth(aes(x = O2evln_O2ls, y = JVPSII_ETRtauav_aLHII_Sig, colour = as.factor(Ex_WL)), method = "lm") +
-  #scale_colour_manual(values = Colours_nm) +
+  geom_point(aes(x = O2evln_O2lsMIN, y = JVPSII_ETRtauav_aLHII_Sig, colour = as.factor(Ex_WL), size = ActPARCorr)) +
+  geom_smooth(aes(x = O2evln_O2lsMIN, y = JVPSII_ETRtauav_aLHII_Sig, colour = as.factor(Ex_WL)), method = "lm") +
+  scale_colour_manual(values = Colours_nm) +
   #facet_grid(rows = vars(Ex_WL)) +
   #coord_fixed(ratio = 1) +
   theme_bw()
-
-
-# ggplot() +
-#   #geom_point(aes(x = ActPARCorr, y = O2evln_O2ls, colour = Ex_WL)) +
-#   geom_point(aes(x = O2FRRfPool %>% filter(Dark1s == 0) %>% filter(TempContO2 == "noTC") %>% pull(JVPSII_aLHIIminmax), y =  O2FRRfPool %>% filter(Dark1s == 0) %>% filter(TempContO2 == "TC") %>% pull(JVPSII_aLHIIminmax))) +
-#   #scale_colour_manual(values = Colours_nm) +
-#   #facet_grid(cols = vars(CultureID)) +
-#   theme_bw()
 
 
 ```
@@ -298,11 +288,14 @@ Discrepancy b/t JVPSII and O2 tells us about e- physiology across light levels (
 
 These discrepancies can also be analyzed comparing PSII ETR e- PSII-1 s-1 with O2 L-2 s-1.
 
-For calibration of JVPSII using O2 data, consider trimming to avoid light saturation region, particularly top light level with NoTC.
+Max: For calibration of JVPSII using O2 data, consider trimming to avoid light saturation region, particularly top light level with NoTC.
+SySl: trimmed out low light measures b/c of slow induction issues.
 
 O2evln_O2ls was calculated by subtracting average slope of start and end respiration rates, but there may still be arithmetic or grouping issues b/c at 0 PAR O2evln_O2ls is not always zero and some data sets show a large displacement from 0.
 Offsets particularly evident in runs with NoTC; runs with TC generally start ~0 indicating that initial and final respiration rates are similar.
 Large upward offsets from O in NoTC runs suggest acceleration of respiration during the run.
+
+SySl: alternate O2evln_O2lsMIN estimated using minimum rate of measured O2 exchange as estimator for respiration, rather than 'dark' rate.
 
 Starting to wonder if calibrations should be run primarily (exclusively?) with TC.
 
